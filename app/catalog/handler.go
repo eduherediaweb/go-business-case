@@ -3,19 +3,13 @@ package catalog
 import (
 	"github.com/mytheresa/go-hiring-challenge/app/api"
 	"net/http"
-	"net/url"
-	"strconv"
 
 	"github.com/mytheresa/go-hiring-challenge/models"
 )
 
-const (
-	LimitMin = 1
-	LimitMax = 100
-)
-
 type Response struct {
-	Products []Product `json:"products"`
+	Products   []Product         `json:"products"`
+	Pagination models.Pagination `json:"pagination" validate:"required"`
 }
 
 type Category struct {
@@ -39,16 +33,11 @@ func NewCatalogHandler(r *models.ProductsRepositoryInterface) *CatalogHandler {
 	}
 }
 
-type Pagination struct {
-	Offset int `json:"offset"`
-	Limit  int `json:"limit"`
-}
-
 func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 
-	paginationParams := paginationParams(r.URL.Query())
+	paginationParams := models.PaginationParams(r.URL.Query())
 
-	res, err := h.repo.GetAllProducts()
+	res, total, err := h.repo.GetAllProductsPaginated(paginationParams)
 	if err != nil {
 		api.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch products")
 		return
@@ -69,35 +58,13 @@ func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 
 	response := Response{
 		Products: products,
+		Pagination: models.Pagination{
+			Offset: paginationParams.Offset,
+			Limit:  paginationParams.Limit,
+			Total:  total,
+		},
 	}
 
 	// Return the products as a JSON response
 	api.OKResponse(w, response)
-}
-
-func paginationParams(values url.Values) Pagination {
-	params := Pagination{
-		Offset: 0,
-		Limit:  10,
-	}
-
-	if offsetStr := values.Get("offset"); offsetStr != "" {
-		if offset, err := strconv.Atoi(offsetStr); err == nil && offset >= 0 {
-			params.Offset = offset
-		}
-	}
-
-	if limitStr := values.Get("limit"); limitStr != "" {
-		if limit, err := strconv.Atoi(limitStr); err == nil {
-			if limit < LimitMin {
-				params.Limit = LimitMin
-			} else if limit > LimitMax {
-				params.Limit = LimitMax
-			} else {
-				params.Limit = limit
-			}
-		}
-	}
-
-	return params
 }
