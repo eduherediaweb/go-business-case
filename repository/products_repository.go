@@ -17,7 +17,7 @@ func NewProductsDatabaseRepository(db *gorm.DB) models.ProductsRepositoryInterfa
 
 func (r *ProductsRepository) GetAllProducts() ([]models.Product, error) {
 	var products []models.Product
-	if err := r.db.Preload("Variants").Find(&products).Error; err != nil {
+	if err := r.db.Preload("Category").Preload("Variants").Find(&products).Error; err != nil {
 		return nil, err
 	}
 	return products, nil
