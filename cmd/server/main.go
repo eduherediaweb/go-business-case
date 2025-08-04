@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/mytheresa/go-hiring-challenge/repository"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +13,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/mytheresa/go-hiring-challenge/app/catalog"
 	"github.com/mytheresa/go-hiring-challenge/app/database"
-	"github.com/mytheresa/go-hiring-challenge/models"
 )
 
 func main() {
@@ -35,8 +35,8 @@ func main() {
 	defer close()
 
 	// Initialize handlers
-	prodRepo := models.NewProductsRepository(db)
-	cat := catalog.NewCatalogHandler(prodRepo)
+	prodRepo := repository.NewProductsDatabaseRepository(db)
+	cat := catalog.NewCatalogHandler(&prodRepo)
 
 	// Set up routing
 	mux := http.NewServeMux()

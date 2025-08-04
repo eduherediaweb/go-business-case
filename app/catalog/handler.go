@@ -17,12 +17,12 @@ type Product struct {
 }
 
 type CatalogHandler struct {
-	repo *models.ProductsRepository
+	repo models.ProductsRepositoryInterface
 }
 
-func NewCatalogHandler(r *models.ProductsRepository) *CatalogHandler {
+func NewCatalogHandler(r *models.ProductsRepositoryInterface) *CatalogHandler {
 	return &CatalogHandler{
-		repo: r,
+		repo: *r,
 	}
 }
 
