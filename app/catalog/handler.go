@@ -8,7 +8,8 @@ import (
 )
 
 type Response struct {
-	Products []Product `json:"products"`
+	Products   []Product         `json:"products"`
+	Pagination models.Pagination `json:"pagination" validate:"required"`
 }
 
 type Category struct {
@@ -33,7 +34,10 @@ func NewCatalogHandler(r *models.ProductsRepositoryInterface) *CatalogHandler {
 }
 
 func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
-	res, err := h.repo.GetAllProducts()
+
+	paginationParams := models.PaginationParams(r.URL.Query())
+
+	res, total, err := h.repo.GetAllProductsPaginated(paginationParams)
 	if err != nil {
 		api.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch products")
 		return
@@ -54,6 +58,11 @@ func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 
 	response := Response{
 		Products: products,
+		Pagination: models.Pagination{
+			Offset: paginationParams.Offset,
+			Limit:  paginationParams.Limit,
+			Total:  total,
+		},
 	}
 
 	// Return the products as a JSON response
