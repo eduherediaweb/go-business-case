@@ -18,6 +18,7 @@ type Category struct {
 }
 
 type Product struct {
+	ID       uint     `json:"id"`
 	Code     string   `json:"code"`
 	Price    float64  `json:"price"`
 	Category Category `json:"category,omitempty"`
@@ -27,9 +28,9 @@ type CatalogHandler struct {
 	repo models.ProductsRepositoryInterface
 }
 
-func NewCatalogHandler(r *models.ProductsRepositoryInterface) *CatalogHandler {
+func NewCatalogHandler(r models.ProductsRepositoryInterface) *CatalogHandler {
 	return &CatalogHandler{
-		repo: *r,
+		repo: r,
 	}
 }
 
@@ -47,6 +48,7 @@ func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	products := make([]Product, len(res))
 	for i, p := range res {
 		products[i] = Product{
+			ID:    p.ID,
 			Code:  p.Code,
 			Price: p.Price.InexactFloat64(),
 			Category: Category{

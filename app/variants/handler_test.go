@@ -16,11 +16,6 @@ type MockVariantRepository struct {
 	mock.Mock
 }
 
-func (m *MockVariantRepository) GetProductWithVariants(productID uint) (*models.Product, error) {
-	args := m.Called(productID)
-	return args.Get(0).(*models.Product), args.Error(1)
-}
-
 func (m *MockVariantRepository) GetProductsByCriteria(filter models.Filter, pagination models.Pagination) ([]models.Product, int32, error) {
 	args := m.Called(filter, pagination)
 	return args.Get(0).([]models.Product), args.Get(1).(int32), args.Error(2)
