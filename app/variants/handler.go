@@ -46,20 +46,20 @@ func NewVariantsHandler(r models.ProductsRepositoryInterface) *VariantHandler {
 func (h *VariantHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	pathParts := strings.Split(r.URL.Path, "/")
 	if len(pathParts) < 3 {
-		http.Error(w, "Invalid product ID", http.StatusBadRequest)
+		api.ErrorResponse(w, http.StatusBadRequest, "Invalid product ID")
 		return
 	}
 
 	idStr := pathParts[2]
 	productID, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		http.Error(w, "Invalid product ID format", http.StatusBadRequest)
+		api.ErrorResponse(w, http.StatusBadRequest, "Invalid product ID format")
 		return
 	}
 
 	product, err := h.repo.GetProductsByIdWithVariants(productID)
 	if err != nil {
-		api.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch products")
+		api.ErrorResponse(w, http.StatusNotFound, "Failed to fetch products")
 		return
 	}
 
