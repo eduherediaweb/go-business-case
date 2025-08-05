@@ -40,3 +40,16 @@ func (r *ProductsRepository) GetProductsByCriteria(filter models.Filter, paginat
 
 	return products, int32(total), nil
 }
+
+func (r *ProductsRepository) GetProductsByIdWithVariants(productID uint64) (models.Product, error) {
+	var product models.Product
+
+	query := r.db.Model(&models.Product{}).Preload("Category").Preload("Variants").
+		Where("id = ?", productID)
+
+	if err := query.Find(&product).Error; err != nil {
+		return product, err
+	}
+
+	return product, nil
+}
