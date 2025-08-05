@@ -37,9 +37,9 @@ type VariantHandler struct {
 	repo models.ProductsRepositoryInterface
 }
 
-func NewVariantHandler(r *models.ProductsRepositoryInterface) *VariantHandler {
+func NewVariantsHandler(r models.ProductsRepositoryInterface) *VariantHandler {
 	return &VariantHandler{
-		repo: *r,
+		repo: r,
 	}
 }
 

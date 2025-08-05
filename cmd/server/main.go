@@ -38,7 +38,7 @@ func main() {
 	// Initialize handlers
 	prodRepo := repository.NewProductsDatabaseRepository(db)
 	catHandler := catalog.NewCatalogHandler(&prodRepo)
-	variantHandler := variants.NewVariantHandler(&prodRepo)
+	variantHandler := variants.NewVariantsHandler(prodRepo)
 
 	// Set up routing
 	mux := http.NewServeMux()
