@@ -1,35 +1,46 @@
 package catalog
 
 import (
-	"encoding/json"
+	"github.com/mytheresa/go-hiring-challenge/app/api"
 	"net/http"
 
 	"github.com/mytheresa/go-hiring-challenge/models"
 )
 
 type Response struct {
-	Products []Product `json:"products"`
+	Products   []Product         `json:"products"`
+	Pagination models.Pagination `json:"pagination" validate:"required"`
+}
+
+type Category struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
 }
 
 type Product struct {
-	Code  string  `json:"code"`
-	Price float64 `json:"price"`
+	ID       uint     `json:"id"`
+	Code     string   `json:"code"`
+	Price    float64  `json:"price"`
+	Category Category `json:"category,omitempty"`
 }
 
 type CatalogHandler struct {
-	repo *models.ProductsRepository
+	repo models.ProductsRepositoryInterface
 }
 
-func NewCatalogHandler(r *models.ProductsRepository) *CatalogHandler {
+func NewCatalogHandler(r models.ProductsRepositoryInterface) *CatalogHandler {
 	return &CatalogHandler{
 		repo: r,
 	}
 }
 
 func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
-	res, err := h.repo.GetAllProducts()
+	filterParams := models.CreateFilter(r.URL.Query())
+	paginationParams := models.PaginationParams(r.URL.Query())
+
+	res, total, err := h.repo.GetProductsByCriteria(filterParams, paginationParams)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		api.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch products")
 		return
 	}
 
@@ -37,20 +48,25 @@ func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	products := make([]Product, len(res))
 	for i, p := range res {
 		products[i] = Product{
+			ID:    p.ID,
 			Code:  p.Code,
 			Price: p.Price.InexactFloat64(),
+			Category: Category{
+				Code: p.Category.Code,
+				Name: p.Category.Name,
+			},
 		}
 	}
 
-	// Return the products as a JSON response
-	w.Header().Set("Content-Type", "application/json")
-
 	response := Response{
 		Products: products,
+		Pagination: models.Pagination{
+			Offset: paginationParams.Offset,
+			Limit:  paginationParams.Limit,
+			Total:  total,
+		},
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Return the products as a JSON response
+	api.OKResponse(w, response)
 }
