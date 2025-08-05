@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+	"fmt"
 	"github.com/mytheresa/go-hiring-challenge/models"
 	"gorm.io/gorm"
 )
@@ -44,10 +46,11 @@ func (r *ProductsRepository) GetProductsByCriteria(filter models.Filter, paginat
 func (r *ProductsRepository) GetProductsByIdWithVariants(productID uint64) (models.Product, error) {
 	var product models.Product
 
-	query := r.db.Model(&models.Product{}).Preload("Category").Preload("Variants").
-		Where("id = ?", productID)
-
-	if err := query.Find(&product).Error; err != nil {
+	if err := r.db.Preload("Category").Preload("Variants").
+		First(&product, productID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return product, fmt.Errorf("product with ID %d not found", productID)
+		}
 		return product, err
 	}
 

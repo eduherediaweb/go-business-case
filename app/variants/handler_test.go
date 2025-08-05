@@ -125,7 +125,7 @@ func TestVariantsHandler_HandleGet_ProductNotFound(t *testing.T) {
 
 	handler.HandleGet(recorder, req)
 
-	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
 
 	mockRepo.AssertExpectations(t)
 }
