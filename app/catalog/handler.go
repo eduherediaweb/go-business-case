@@ -34,10 +34,10 @@ func NewCatalogHandler(r *models.ProductsRepositoryInterface) *CatalogHandler {
 }
 
 func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
-
+	filterParams := models.CreateFilter(r.URL.Query())
 	paginationParams := models.PaginationParams(r.URL.Query())
 
-	res, total, err := h.repo.GetAllProductsPaginated(paginationParams)
+	res, total, err := h.repo.GetProductsByCriteria(filterParams, paginationParams)
 	if err != nil {
 		api.ErrorResponse(w, http.StatusInternalServerError, "Failed to fetch products")
 		return
